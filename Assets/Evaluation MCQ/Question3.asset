@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d01fd2d64a9249049aaa77d5c12a82fe, type: 3}
+  m_Name: Question3
+  m_EditorClassIdentifier: 
+  questionText: 3. What is the figure of merit of the galvanometer shown here?
+  referenceImage: {fileID: 0}
+  explanationText: 'Ig = kN Where Ig is the maximum current, k is the figure of merit,
+    N is the number of divisions.
+
+    k (25) = 500 x 10^-6
+
+    k = 2 x 10^-5
+    A'
+  options:
+  - "5 x 10\u207B\u2074 A"
+  - "1 x 10\u207B\u2074 A"
+  - "2 x 10\u207B\u2075 A"
+  - "10\u207B\u2076 A"
+  correctOptionIndex: 2
