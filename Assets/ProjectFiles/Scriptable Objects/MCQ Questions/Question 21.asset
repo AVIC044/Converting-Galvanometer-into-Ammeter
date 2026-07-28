@@ -10,15 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d01fd2d64a9249049aaa77d5c12a82fe, type: 3}
-  m_Name: Question 12
+  m_Name: Question 21
   m_EditorClassIdentifier: 
-  questionText: "If the figure of merit of the galvanometer is 10  \xB5A,\nand N
-    is 30, the maximum current l<sub>g</sub>is ____________."
+  questionText: "The total resistance offered by the resistance box is __________
+    \u03A9. "
   referenceImage: {fileID: 0}
-  explanationText: "I<sub>g</sub> = kN\n\nI<sub>g</sub> = 10 x 30\n\n= 300 \xB5A\n"
+  explanationText: "Taking out 5000, 2000, 2000, 500, 200, 100, 50, 50 keys from
+    the resistance box we get, 9900 \u03A9."
   options:
-  - "100 \xB5A"
-  - "200 \xB5A"
-  - "300 \xB5A"
-  - "400 \xB5A"
+  - 900
+  - 9000
+  - 9900
+  - 8900
   correctOptionIndex: 2
