@@ -1,0 +1,315 @@
+fileFormatVersion: 2
+guid: 7ae609a23bcd06e4cbc51611c2d206aa
+ModelImporter:
+  serializedVersion: 24200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Copper end
+    second: {fileID: 2100000, guid: 687a7654a9be8be4fbacd430caea1ac1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Galvanometer
+    second: {fileID: 2100000, guid: aa4ba529ad793f04ead69fe4e49abcda, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material.001
+    second: {fileID: 2100000, guid: 62a271bd7b6d301418bb1fc740cdaf01, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material.004
+    second: {fileID: 2100000, guid: 2848f96133f7b0e4d8278d989961274a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Physics Table
+    second: {fileID: 2100000, guid: 14af50584f66cdf4393179814fd4ed47, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PlugKey
+    second: {fileID: 2100000, guid: 0726a83f6054cf54fb6a1dadd63643bb, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Polished Oak Wood.001
+    second: {fileID: 2100000, guid: b0dc11d441781514bb9314560c4bcc67, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Rheostat_
+    second: {fileID: 2100000, guid: af3d328703043c6438a0e66b4ad01305, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Tool_M.001
+    second: {fileID: 2100000, guid: b870a3ccebd6c9d43983f337dc13b597, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Voltmeter_
+    second: {fileID: 2100000, guid: 0e7d82f61fcfcd54e964ccf5bac1607b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: White Painted Wood.001
+    second: {fileID: 2100000, guid: 80795af11207e754f84934d0d550e591, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: WireBlack
+    second: {fileID: 2100000, guid: 7ea2ade34f83a70428d7d0fde52d5d11, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: WireRed
+    second: {fileID: 2100000, guid: d4a479954ecf6f4489fda3fb48534bae, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: gold.001
+    second: {fileID: 2100000, guid: 695b1d448551cb947a2750290a3aa8a0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: lambert2
+    second: {fileID: 2100000, guid: 47ae401f45b83a44dad8dd96099d51f6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: num.001
+    second: {fileID: 2100000, guid: a6e393229db087e428b1fc48b53c9d7c, type: 2}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: BATTER~1
+    second: {fileID: 2800000, guid: 4c43bb7aed5cbe6488144613c9446ad7, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Battery eliminator__BatteryEliminator_Normal
+    second: {fileID: 2800000, guid: c4b0185b5fffff342addc521c62e836f, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Battery eliminator__lambert1_AlbedoTransparency
+    second: {fileID: 2800000, guid: 7c1a6503cc97d0044933b1791c5455a7, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Digital Multimeter Test Lead Set_Tool_M_AlbedoTransparency
+    second: {fileID: 2800000, guid: 00d016cb7534fc44fa922f77407b633d, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Digital Multimeter Test Lead Set_Tool_M_MetallicSmoothness
+    second: {fileID: 2800000, guid: 9bb9c79d240af9047b1f75c28244ef62, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Digital Multimeter Test Lead Set_Tool_M_Normal
+    second: {fileID: 2800000, guid: adcd14fbe73d4ad42abb546e47f25f7b, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: GALVANOMETER_4k_AlbedoTransparency.1001
+    second: {fileID: 2800000, guid: 2dcd8786f8b10bb48af452d0d12ae85f, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: GALVANOMETER_4k_MetallicSmoothness.1001
+    second: {fileID: 2800000, guid: 33872f7d0a949d84cb1c7a06ccc26cf1, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: GALVANOMETER_4k_Normal.1001
+    second: {fileID: 2800000, guid: 83676dbdace5d1941a33561a3da4973f, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: PLUG_K~1
+    second: {fileID: 2800000, guid: e947043d78f32654b9c0edfabb85824c, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: PLUG_K~2
+    second: {fileID: 2800000, guid: b0a70829f636a18419e846b73f2b3f94, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: PLUG_K~3
+    second: {fileID: 2800000, guid: ff1e29d79879f2f4ea64cd590a743a73, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Physics Table_Physics Table_AlbedoTransparency
+    second: {fileID: 2800000, guid: aa7f8548a46798b43a7a5aa04820c187, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Physics Table_Physics Table_MetallicSmoothness
+    second: {fileID: 2800000, guid: 9a8e459b8dbd6f348994521c460e8cab, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Physics Table_Physics Table_Normal
+    second: {fileID: 2800000, guid: c5dc4e0261cabfa469170d9eafd04aba, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: baked 2 diffuse
+    second: {fileID: 2800000, guid: 962f76589d07ed94db15a9709ebdbc43, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: baked 2 emission
+    second: {fileID: 2800000, guid: 66dfee9264383c24c8b705a53ade2b3f, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: baked 2 metalic
+    second: {fileID: 2800000, guid: d29d99605526f10439956df47694e445, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: baked 2 roughness
+    second: {fileID: 2800000, guid: 98187cc0016b091418f0bfa76a945bb0, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: rheostat_low_rheostat_AlbedoTransparency
+    second: {fileID: 2800000, guid: fe9806548a2d30a4cafe239c30e3f841, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: rheostat_low_rheostat_MetallicSmoothness
+    second: {fileID: 2800000, guid: 535214f4974b54646bfeea8f34329101, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: rheostat_low_rheostat_Normal
+    second: {fileID: 2800000, guid: 53b3a123bf1e4c5429bba2c5c74a9c58, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: voltmeter_4k_AlbedoTransparency
+    second: {fileID: 2800000, guid: c653516f88e849e40ac8630d7ca61def, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: voltmeter_4k_MetallicSmoothness
+    second: {fileID: 2800000, guid: 770e6ba286877654e9a462dd2a42de7f, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: voltmeter_4k_Normal
+    second: {fileID: 2800000, guid: f30d84b54f7402a4fb5b521284d5f9cb, type: 3}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    removeConstantScaleCurves: 0
+    motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    importConstraints: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    extraUserProperties: []
+    clipAnimations: []
+    isReadable: 0
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    useSRGBMaterialColor: 1
+    sortHierarchyByName: 1
+    importPhysicalCameras: 1
+    importVisibility: 1
+    importBlendShapes: 1
+    importCameras: 1
+    importLights: 1
+    nodeNameCollisionStrategy: 1
+    fileIdsGeneration: 2
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    keepQuads: 0
+    weldVertices: 1
+    bakeAxisConversion: 0
+    preserveHierarchy: 0
+    skinWeightsMode: 0
+    maxBonesPerVertex: 4
+    minBoneWeight: 0.001
+    optimizeBones: 1
+    generateMeshLods: 0
+    meshLodGenerationFlags: 0
+    maximumMeshLod: -1
+    meshOptimizationFlags: -1
+    indexFormat: 0
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVMarginMethod: 1
+    secondaryUVMinLightmapResolution: 40
+    secondaryUVMinObjectScale: 1
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+    strictVertexDataChecks: 0
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalCalculationMode: 4
+    legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
+    blendShapeNormalImportMode: 1
+    normalSmoothingSource: 0
+  referencedClips: []
+  importAnimation: 1
+  humanDescription:
+    serializedVersion: 3
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    globalScale: 1
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 1
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  autoGenerateAvatarMappingIfUnspecified: 1
+  animationType: 2
+  humanoidOversampling: 1
+  avatarSetup: 0
+  addHumanoidExtraRootOnlyWhenUsingAvatar: 1
+  importBlendShapeDeformPercent: 1
+  remapMaterialsIfMaterialImportModeIsNone: 0
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
