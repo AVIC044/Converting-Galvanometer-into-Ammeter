@@ -19,11 +19,10 @@ MonoBehaviour:
 
     k (25) = 500 x 10^-6
 
-    k = 2 x 10^-5
-    A'
+    k = 2 x 10^-5 A'
   options:
-  - "5 x 10\u207B\u2074 A"
-  - "1 x 10\u207B\u2074 A"
-  - "2 x 10\u207B\u2075 A"
-  - "10\u207B\u2076 A"
+  - 5 x 10-4A
+  - 1 x 10^-4 A
+  - 2 x 10^-5 A
+  - 10^-6A
   correctOptionIndex: 2
