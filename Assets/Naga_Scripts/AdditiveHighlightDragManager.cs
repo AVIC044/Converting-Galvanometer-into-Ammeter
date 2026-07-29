@@ -18,8 +18,9 @@ public class AdditiveHighlightDragManager : MonoBehaviour
     [Tooltip("Material appended to all MeshRenderers on the active target object while dragging.")]
     public Material highlightMaterial;
 
-    [Header("Canvas To Disable When Snapping Is Complete")]
-    public Canvas targetCanvas;
+    [Header("UI Parent To Disable When Snapping Is Complete")]
+    [Tooltip("Specific UI parent GameObject (e.g. Panel/Group) to turn off when snapping completes (Not the whole Canvas).")]
+    public GameObject targetParentObject;
 
     [Header("Placement Events")]
     [Tooltip("Triggered every time a single object is successfully placed.")]
@@ -165,8 +166,9 @@ public class AdditiveHighlightDragManager : MonoBehaviour
             // ✅ All objects placed
             OnAllObjectsPlaced?.Invoke();
 
-            if (targetCanvas != null)
-                targetCanvas.gameObject.SetActive(false);
+            // Disable only the specific parent UI object (Panel/Group) instead of the whole Canvas
+            if (targetParentObject != null)
+                targetParentObject.SetActive(false);
         }
     }
 
