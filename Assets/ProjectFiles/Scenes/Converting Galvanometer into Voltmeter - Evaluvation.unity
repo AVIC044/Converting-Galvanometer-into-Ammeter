@@ -3750,52 +3750,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 340977051}
   m_CullTransparentMesh: 1
---- !u!1 &341742271
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 341742273}
-  - component: {fileID: 341742272}
-  m_Layer: 0
-  m_Name: ExplanationPanelController
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &341742272
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 341742271}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9c60b477503b00d499732b04391d3e3a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ExplanationPanelController
-  explanationButton: {fileID: 1986052553}
-  explanationPanel: {fileID: 608525871}
---- !u!4 &341742273
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 341742271}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &349128535
 GameObject:
   m_ObjectHideFlags: 0
@@ -4254,7 +4208,7 @@ MonoBehaviour:
   previousButton: {fileID: 791037932}
   pageNumberText: {fileID: 1551144295}
   developerIndexMode: 0
-  testing: 1
+  testing: 0
   requiresInteraction: 01010101010101
   currentIndex: 0
 --- !u!4 &448350224
@@ -6553,9 +6507,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'ExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExplanationExpn
-
-'
+  m_text: The galvanometer has a low resistance, and hence a high resistance needs
+    to be connected in series with it to safeguard it from any damage.
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 356b1ee212a194b49bed1adb63017c1b, type: 2}
   m_sharedMaterial: {fileID: -8232536831469020223, guid: 356b1ee212a194b49bed1adb63017c1b, type: 2}
@@ -8674,9 +8627,23 @@ MonoBehaviour:
   blinkSpeed: 5
   minAlpha: 0.3
   maxAlpha: 1
+  audioSource: {fileID: 1098130748}
+  snapAudioClip: {fileID: 8300000, guid: ddb9b58d2abd67c4e9b146671ce2eb77, type: 3}
   onCorrectDrop:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 1190644003}
+        m_TargetAssemblyTypeName: Question6WhyController, Assembly-CSharp
+        m_MethodName: Drag1Completed
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
       - m_Target: {fileID: 734447399}
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
         m_MethodName: SetActive
@@ -9792,7 +9759,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 341742272}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: ExplanationPanelController, Assembly-CSharp
         m_MethodName: OpenExplanationPanel
         m_Mode: 1
@@ -11707,6 +11674,70 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1178822382}
   m_CullTransparentMesh: 1
+--- !u!1 &1190644002
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1190644004}
+  - component: {fileID: 1190644003}
+  m_Layer: 0
+  m_Name: Question6WhyController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1190644003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1190644002}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 24e3ff77a31c36e4fb64c3a32bab42ad, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Question6WhyController
+  questionPageIndex: 5
+  whyButton: {fileID: 1012495611}
+  explanationPanel: {fileID: 608525871}
+  vSprite: {fileID: 734447399}
+  gSprite: {fileID: 1117415247}
+  onBothDragsCompleted:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 448350223}
+        m_TargetAssemblyTypeName: PageNavigationController, Assembly-CSharp
+        m_MethodName: RequestNavigationUnlock
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!4 &1190644004
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1190644002}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1193617181
 GameObject:
   m_ObjectHideFlags: 0
@@ -17345,9 +17376,23 @@ MonoBehaviour:
   blinkSpeed: 5
   minAlpha: 0.3
   maxAlpha: 1
+  audioSource: {fileID: 1098130748}
+  snapAudioClip: {fileID: 8300000, guid: ddb9b58d2abd67c4e9b146671ce2eb77, type: 3}
   onCorrectDrop:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 1190644003}
+        m_TargetAssemblyTypeName: Question6WhyController, Assembly-CSharp
+        m_MethodName: Drag2Completed
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
       - m_Target: {fileID: 1117415247}
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
         m_MethodName: SetActive
@@ -17928,8 +17973,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 341742272}
-        m_TargetAssemblyTypeName: ExplanationPanelController, Assembly-CSharp
+      - m_Target: {fileID: 1190644003}
+        m_TargetAssemblyTypeName: Question6WhyController, Assembly-CSharp
         m_MethodName: CloseExplanationPanel
         m_Mode: 1
         m_Arguments:
@@ -20293,5 +20338,5 @@ SceneRoots:
   - {fileID: 1098130749}
   - {fileID: 833643361}
   - {fileID: 887691583}
-  - {fileID: 341742273}
+  - {fileID: 1190644004}
   - {fileID: 747802031}

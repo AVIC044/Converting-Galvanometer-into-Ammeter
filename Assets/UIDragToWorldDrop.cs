@@ -36,6 +36,10 @@ public class UIDragToWorldDrop : MonoBehaviour,
     [Range(0f, 1f)]
     public float maxAlpha = 1f;
 
+    [Header("Snap Sound")]
+    public AudioSource audioSource;
+    public AudioClip snapAudioClip;
+
     [Header("Events")]
     public UnityEvent onCorrectDrop;
 
@@ -139,6 +143,12 @@ public class UIDragToWorldDrop : MonoBehaviour,
                 droppedCorrectly = true;
 
                 Debug.Log("Correct Drop!");
+
+                // Play Snap Sound
+                if (audioSource != null && snapAudioClip != null)
+                {
+                    audioSource.PlayOneShot(snapAudioClip);
+                }
 
                 onCorrectDrop?.Invoke();
 
