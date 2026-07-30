@@ -12,14 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d01fd2d64a9249049aaa77d5c12a82fe, type: 3}
   m_Name: Question1
   m_EditorClassIdentifier: 
-  questionText: 1. Why is a voltmeter always connected in parallel with the circuit?
+  questionText: '1. The angle between the reflected ray and the
+
+    normal at the
+    point of incidence is called______'
   referenceImage: {fileID: 0}
-  explanationText: Voltmeter is used to measure the potential difference across two
-    points. Since the objects in parallel have the same potential, a voltmeter should
-    always be connected in parallel.
+  explanationText: The angle between the normal and the reflected ray is known as
+    the angle of reflection.
   options:
-  - Because the objects in parallel have the same potential difference.
-  - Because the objects in parallel have the same current.
-  - Because the objects in series have the same potential difference.
-  - Because the objects in series have the same resistance.
-  correctOptionIndex: 0
+  - The glance angle
+  - 'The angle of reflection '
+  - The angle of incidence
+  - The angle of emergence
+  correctOptionIndex: 1

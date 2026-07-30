@@ -50,30 +50,20 @@ public class Question6WhyController : MonoBehaviour
         PageNavigationController.OnPageChanged -= OnPageChanged;
     }
 
-    private void OnPageChanged(int pageIndex)
-    {
-        if (explanationPanel != null)
-            explanationPanel.SetActive(false);
+   private void OnPageChanged(int pageIndex)
+{
+    if (explanationPanel != null)
+        explanationPanel.SetActive(false);
 
-        if (pageIndex == questionPageIndex)
-        {
-            if (vSprite != null)
-                vSprite.SetActive(drag1Completed);
+    // Once enabled, keep them visible on every page.
+    if (vSprite != null)
+        vSprite.SetActive(drag1Completed);
 
-            if (gSprite != null)
-                gSprite.SetActive(drag2Completed);
-        }
-        else
-        {
-            if (vSprite != null)
-                vSprite.SetActive(false);
+    if (gSprite != null)
+        gSprite.SetActive(drag2Completed);
 
-            if (gSprite != null)
-                gSprite.SetActive(false);
-        }
-
-        UpdateWhyButton();
-    }
+    UpdateWhyButton();
+}
 
     public void Drag1Completed()
     {
