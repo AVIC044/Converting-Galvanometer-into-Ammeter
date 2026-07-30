@@ -3,19 +3,22 @@ using TMPro;
 using UnityEngine.UI;
 using UnityEngine.Events;
 using System.Collections;
+using System.Globalization;
 
 public class SingleFieldDialerController : MonoBehaviour
 {
-    [Header("Input")]
-    public TMP_InputField answerField;
+    [Header("Input Fields")]
+    public TMP_InputField[] answerFields;
 
-    [Header("Correct Answer")]
-    public float correctAnswer;
+    [Header("Correct Answers")]
+    public float[] correctAnswers;
 
-    [Header("Success Icon")]
-    public GameObject successIcon;
+    [Header("Icons")]
+    public Image[] iconImages;
 
-    public GameObject wrongIcon;
+    [Header("Icon Sprites")]
+    public Sprite correctSprite;
+    public Sprite wrongSprite;
 
     [Header("Buttons")]
     public Button validateButton;
@@ -30,15 +33,36 @@ public class SingleFieldDialerController : MonoBehaviour
     public UnityEvent OnWrongAnswer;
     public UnityEvent OnAllAnswersVerified;
 
+    private int currentFieldIndex = 0;
     private int wrongAttempts;
-    private bool solved;
+    private bool solvedAll;
+    private bool isProcessingStep = false;
 
-    private Coroutine wrongIconCoroutine;
+    private PageNavigationController slideController;
 
-    private void Start()
+    private TMP_InputField ActiveField => (answerFields != null && currentFieldIndex >= 0 && currentFieldIndex < answerFields.Length) ? answerFields[currentFieldIndex] : null;
+    private float ActiveAnswer => (correctAnswers != null && currentFieldIndex >= 0 && currentFieldIndex < correctAnswers.Length) ? correctAnswers[currentFieldIndex] : 0f;
+    private Image ActiveIconImage => (iconImages != null && currentFieldIndex >= 0 && currentFieldIndex < iconImages.Length) ? iconImages[currentFieldIndex] : null;
+
+    void Start()
     {
-        ResetAll();
+        slideController = FindFirstObjectByType<PageNavigationController>();
 
+        if (answerFields == null || answerFields.Length == 0)
+        {
+            Debug.LogError("No Answer Fields assigned.");
+            enabled = false;
+            return;
+        }
+
+        if (answerFields.Length != correctAnswers.Length)
+        {
+            Debug.LogError("Answer Fields and Correct Answers arrays must be the same size.");
+            enabled = false;
+            return;
+        }
+
+        // Clean up UI button listeners to prevent multiple clicks firing in a single frame
         if (validateButton != null)
         {
             validateButton.onClick.RemoveAllListeners();
@@ -48,84 +72,76 @@ public class SingleFieldDialerController : MonoBehaviour
         if (autoFillButton != null)
         {
             autoFillButton.onClick.RemoveAllListeners();
-            autoFillButton.onClick.AddListener(AutoFill);
+            autoFillButton.onClick.AddListener(AutoFillCurrentField);
             autoFillButton.gameObject.SetActive(false);
         }
+
+        ResetAll();
     }
 
-    private void OnDisable()
+    IEnumerator ShowWrongIcon()
     {
-        if (wrongIconCoroutine != null)
+        if (ActiveIconImage != null)
         {
-            StopCoroutine(wrongIconCoroutine);
-            wrongIconCoroutine = null;
+            ActiveIconImage.sprite = wrongSprite;
+            ActiveIconImage.gameObject.SetActive(true);
         }
-
-        if (wrongIcon != null)
-            wrongIcon.SetActive(false);
-    }
-
-    private IEnumerator ShowWrongIcon()
-    {
-        if (wrongIcon != null)
-            wrongIcon.SetActive(true);
 
         yield return new WaitForSeconds(0.7f);
 
-        if (wrongIcon != null)
-            wrongIcon.SetActive(false);
-
-        if (answerField != null)
+        if (ActiveIconImage != null)
         {
-            answerField.text = "";
-            answerField.Select();
-            answerField.ActivateInputField();
+            ActiveIconImage.gameObject.SetActive(false);
         }
 
-        wrongIconCoroutine = null;
+        if (ActiveField != null)
+        {
+            ActiveField.text = "";
+            ActiveField.Select();
+            ActiveField.ActivateInputField();
+        }
     }
 
     public void OnDigitPressed(string digit)
     {
-        if (solved || answerField == null) return;
+        if (solvedAll || isProcessingStep || ActiveField == null) return;
 
-        answerField.text += digit;
+        ActiveField.text += digit;
     }
 
     public void OnDecimalPressed()
     {
-        if (solved || answerField == null) return;
+        if (solvedAll || isProcessingStep || ActiveField == null) return;
 
-        if (!answerField.text.Contains("."))
+        if (!ActiveField.text.Contains("."))
         {
-            if (answerField.text == "")
-                answerField.text = "0.";
+            if (string.IsNullOrEmpty(ActiveField.text))
+                ActiveField.text = "0.";
             else
-                answerField.text += ".";
+                ActiveField.text += ".";
         }
     }
 
     public void OnBackspacePressed()
     {
-        if (solved || answerField == null) return;
+        if (solvedAll || isProcessingStep || ActiveField == null) return;
 
-        if (answerField.text.Length > 0)
-            answerField.text = answerField.text.Substring(0, answerField.text.Length - 1);
+        if (ActiveField.text.Length > 0)
+        {
+            ActiveField.text = ActiveField.text.Substring(0, ActiveField.text.Length - 1);
+        }
     }
 
     public void OnValidatePressed()
     {
-        if (solved || answerField == null) return;
+        if (solvedAll || isProcessingStep || ActiveField == null) return;
 
-        if (!float.TryParse(answerField.text, out float value))
+        if (!float.TryParse(ActiveField.text, NumberStyles.Any, CultureInfo.InvariantCulture, out float value))
             return;
 
-        if (Mathf.Abs(value - correctAnswer) > tolerance)
+        if (Mathf.Abs(value - ActiveAnswer) > tolerance)
         {
-            if (wrongIconCoroutine != null)
-                StopCoroutine(wrongIconCoroutine);
-
-            wrongIconCoroutine = StartCoroutine(ShowWrongIcon());
+            StartCoroutine(ShowWrongIcon());
             wrongAttempts++;
             OnWrongAnswer?.Invoke();
 
@@ -135,33 +151,67 @@ public class SingleFieldDialerController : MonoBehaviour
             return;
         }
 
-        if (successIcon != null)
-            successIcon.SetActive(true);
+        StartCoroutine(ProcessCurrentFieldSuccessRoutine());
+    }
 
-        answerField.interactable = false;
+    public void AutoFillCurrentField()
+    {
+        if (solvedAll || isProcessingStep || ActiveField == null) return;
+
+        // Fills ONLY the currently active index field
+        ActiveField.text = ActiveAnswer.ToString("G7", CultureInfo.InvariantCulture);
+
+        StartCoroutine(ProcessCurrentFieldSuccessRoutine());
+    }
+
+    private IEnumerator ProcessCurrentFieldSuccessRoutine()
+    {
+        if (isProcessingStep) yield break;
+        isProcessingStep = true;
+
+        TMP_InputField fieldToLock = ActiveField;
+
+        // 1. Display success icon for current element
+        if (ActiveIconImage != null)
+        {
+            ActiveIconImage.sprite = correctSprite;
+            ActiveIconImage.gameObject.SetActive(true);
+        }
+
+        // 2. Lock current input field
+        LockInputField(fieldToLock);
 
         OnCorrectAnswer?.Invoke();
 
-        FinishPuzzle();
+        // 3. Reset wrong attempts & hide auto-fill button
+        wrongAttempts = 0;
+        if (autoFillButton != null)
+            autoFillButton.gameObject.SetActive(false);
+
+        // 4. Force Canvas update and wait 1 frame to prevent click propagation to the next field
+        Canvas.ForceUpdateCanvases();
+        yield return null;
+
+        // 5. Increment index by EXACTLY 1 step
+        currentFieldIndex++;
+
+        if (currentFieldIndex < answerFields.Length)
+        {
+            // Unlock and activate ONLY the next field
+            UnlockInputField(ActiveField);
+        }
+        else
+        {
+            // Finished all elements in order
+            FinishPuzzle();
+        }
+
+        isProcessingStep = false;
     }
 
-    public void AutoFill()
+    void FinishPuzzle()
     {
-        if (answerField != null)
-            answerField.text = correctAnswer.ToString();
-
-        if (successIcon != null)
-            successIcon.SetActive(true);
-
-        FinishPuzzle();
-    }
-
-    private void FinishPuzzle()
-    {
-        solved = true;
-
-        if (answerField != null)
-            answerField.interactable = false;
+        solvedAll = true;
 
         if (validateButton != null)
             validateButton.interactable = false;
@@ -169,42 +219,72 @@ public class SingleFieldDialerController : MonoBehaviour
         if (autoFillButton != null)
             autoFillButton.gameObject.SetActive(false);
 
-        // Access the singleton instance directly so multiple components don't interfere
-        if (PageNavigationController.Instance != null)
-        {
-            PageNavigationController.Instance.EnableNavigationButtons();
-        }
-        else
-        {
-            PageNavigationController.RequestNavigationUnlock();
-        }
+        slideController?.EnableNavigationButtons();
 
         OnAllAnswersVerified?.Invoke();
     }
 
     public void ResetAll()
     {
-        solved = false;
+        StopAllCoroutines();
+
+        solvedAll = false;
+        isProcessingStep = false;
+        currentFieldIndex = 0;
         wrongAttempts = 0;
 
-        if (answerField != null)
+        if (iconImages != null)
         {
-            answerField.text = "";
-            answerField.interactable = true;
-            answerField.Select();
-            answerField.ActivateInputField();
+            for (int i = 0; i < iconImages.Length; i++)
+            {
+                if (iconImages[i] != null)
+                    iconImages[i].gameObject.SetActive(false);
+            }
         }
-
-        if (successIcon != null)
-            successIcon.SetActive(false);
-
-        if (wrongIcon != null)
-            wrongIcon.SetActive(false);
 
         if (validateButton != null)
             validateButton.interactable = true;
 
         if (autoFillButton != null)
             autoFillButton.gameObject.SetActive(false);
+
+        // Lock all input fields on start/reset
+        for (int i = 0; i < answerFields.Length; i++)
+        {
+            if (answerFields[i] != null)
+            {
+                answerFields[i].text = "";
+                LockInputField(answerFields[i]);
+            }
+        }
+
+        // Unlock ONLY Element 0
+        if (ActiveField != null)
+        {
+            UnlockInputField(ActiveField);
+        }
+    }
+
+    private void LockInputField(TMP_InputField field)
+    {
+        if (field == null) return;
+
+        field.interactable = false;
+
+        if (field.targetGraphic != null)
+            field.targetGraphic.raycastTarget = false;
+    }
+
+    private void UnlockInputField(TMP_InputField field)
+    {
+        if (field == null) return;
+
+        field.interactable = true;
+
+        if (field.targetGraphic != null)
+            field.targetGraphic.raycastTarget = true;
+
+        field.Select();
+        field.ActivateInputField();
     }
 }
