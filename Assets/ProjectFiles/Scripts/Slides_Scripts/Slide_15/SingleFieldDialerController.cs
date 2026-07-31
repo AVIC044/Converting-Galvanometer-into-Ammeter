@@ -2,17 +2,24 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using UnityEngine.Events;
+using System.Collections;
 
 public class SingleFieldDialerController : MonoBehaviour
 {
     [Header("Input")]
-    public TMP_InputField answerField;
+    public TMP_InputField[] answerFields;
+    [Tooltip("Which answer field is used on this slide")]
+    public int activeFieldIndex = 0;
 
     [Header("Correct Answer")]
-    public float correctAnswer;
+    public float[] correctAnswers;
 
-    [Header("Success Icon")]
-    public GameObject successIcon;
+    [Header("Icons")]
+    public GameObject[] successIcons;
+    public GameObject[] wrongIcons;
+
+    private GameObject ActiveSuccessIcon => successIcons[activeFieldIndex];
+    private GameObject ActiveWrongIcon => wrongIcons[activeFieldIndex];
 
     [Header("Buttons")]
     public Button validateButton;
@@ -32,6 +39,10 @@ public class SingleFieldDialerController : MonoBehaviour
 
     private PageNavigationController slideController;
 
+    private TMP_InputField ActiveField => answerFields[activeFieldIndex];
+
+    private float ActiveAnswer => correctAnswers[activeFieldIndex];
+
     void Start()
     {
         slideController = FindFirstObjectByType<PageNavigationController>();
@@ -42,25 +53,53 @@ public class SingleFieldDialerController : MonoBehaviour
         autoFillButton.onClick.AddListener(AutoFill);
 
         autoFillButton.gameObject.SetActive(false);
+        if (activeFieldIndex < 0 || activeFieldIndex >= answerFields.Length)
+        {
+            Debug.LogError($"Active Field Index ({activeFieldIndex}) is out of range.");
+            enabled = false;
+            return;
+        }
+        if (answerFields.Length != correctAnswers.Length)
+        {
+            Debug.LogError("Answer Fields and Correct Answers arrays must be the same size.");
+            enabled = false;
+            return;
+        }
+    }
+
+
+
+    IEnumerator ShowWrongIcon()
+    {
+        ActiveWrongIcon.SetActive(true);
+
+        yield return new WaitForSeconds(0.7f);
+
+        ActiveWrongIcon.SetActive(false);
+
+        ActiveField.text = "";
+
+        ActiveField.Select();
+        ActiveField.ActivateInputField();
     }
 
     public void OnDigitPressed(string digit)
     {
         if (solved) return;
 
-        answerField.text += digit;
+        ActiveField.text += digit;
     }
 
     public void OnDecimalPressed()
     {
         if (solved) return;
 
-        if (!answerField.text.Contains("."))
+        if (!ActiveField.text.Contains("."))
         {
-            if (answerField.text == "")
-                answerField.text = "0.";
+            if (ActiveField.text == "")
+                ActiveField.text = "0.";
             else
-                answerField.text += ".";
+                ActiveField.text += ".";
         }
     }
 
@@ -68,23 +107,24 @@ public class SingleFieldDialerController : MonoBehaviour
     {
         if (solved) return;
 
-        if (answerField.text.Length > 0)
-            answerField.text =
-                answerField.text.Substring(0, answerField.text.Length - 1);
+        if (ActiveField.text.Length > 0)
+        {
+            ActiveField.text =
+                ActiveField.text.Substring(0, ActiveField.text.Length - 1);
+        }
     }
 
     public void OnValidatePressed()
     {
         if (solved) return;
 
-        if (!float.TryParse(answerField.text, out float value))
+        if (!float.TryParse(ActiveField.text, out float value))
             return;
 
-        if (Mathf.Abs(value - correctAnswer) > tolerance)
+        if (Mathf.Abs(value - ActiveAnswer) > tolerance)
         {
-            answerField.text = "";
+            StartCoroutine(ShowWrongIcon());
             wrongAttempts++;
-
             OnWrongAnswer?.Invoke();
 
             if (wrongAttempts >= maxWrongAttempts)
@@ -93,18 +133,21 @@ public class SingleFieldDialerController : MonoBehaviour
             return;
         }
 
-        successIcon.SetActive(true);
-        answerField.interactable = false;
+        ActiveSuccessIcon.SetActive(true);
+        ActiveField.interactable = false;
 
         OnCorrectAnswer?.Invoke();
+
 
         FinishPuzzle();
     }
 
-    void AutoFill()
+    public void AutoFill()
     {
-        answerField.text = correctAnswer.ToString();
-        successIcon.SetActive(true);
+        ActiveField.text = ActiveAnswer.ToString();
+        ActiveField.interactable = false;
+
+        ActiveSuccessIcon.SetActive(true);
 
         FinishPuzzle();
     }
@@ -113,7 +156,7 @@ public class SingleFieldDialerController : MonoBehaviour
     {
         solved = true;
 
-        answerField.interactable = false;
+        ActiveField.interactable = false;
         validateButton.interactable = false;
         autoFillButton.gameObject.SetActive(false);
 
@@ -127,12 +170,21 @@ public class SingleFieldDialerController : MonoBehaviour
         solved = false;
         wrongAttempts = 0;
 
-        answerField.text = "";
-        answerField.interactable = true;
-
-        successIcon.SetActive(false);
+        ActiveSuccessIcon.SetActive(false);
+        ActiveWrongIcon.SetActive(false);
 
         validateButton.interactable = true;
         autoFillButton.gameObject.SetActive(false);
+
+        for (int i = 0; i < answerFields.Length; i++)
+        {
+            answerFields[i].text = "";
+            answerFields[i].interactable = false;
+        }
+
+        ActiveField.interactable = true;
+
+        ActiveField.Select();
+        ActiveField.ActivateInputField();
     }
 }

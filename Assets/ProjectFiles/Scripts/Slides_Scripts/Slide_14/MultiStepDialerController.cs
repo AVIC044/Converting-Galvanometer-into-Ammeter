@@ -2,6 +2,7 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using UnityEngine.Events;
+using System.Collections;
 
 public class MultiStepDialerController : MonoBehaviour
 {
@@ -18,10 +19,13 @@ public class MultiStepDialerController : MonoBehaviour
     public float finalAnswer;
 
     [Header("Success Icons (Same Order)")]
-    public GameObject numeratorIcon;
-    public GameObject denominatorIcon;
-    public GameObject gIcon;
-    public GameObject finalIcon;
+    public GameObject numeratorCorrectIcon;
+    public GameObject denominatorCorrectIcon;
+    public GameObject gCorrectIcon;
+    public GameObject finalCorrectIcon;
+
+    [Header("Wrong Answer Icons")]
+    public GameObject[] wrongIcons;
 
     [Header("Buttons")]
     public Button validateButton;
@@ -68,10 +72,10 @@ public class MultiStepDialerController : MonoBehaviour
 
         icons = new GameObject[]
         {
-            numeratorIcon,
-            denominatorIcon,
-            gIcon,
-            finalIcon
+            numeratorCorrectIcon,
+            denominatorCorrectIcon,
+            gCorrectIcon,
+            finalCorrectIcon
         };
 
         ResetAll();
@@ -84,6 +88,22 @@ public class MultiStepDialerController : MonoBehaviour
             autoFillButton.onClick.AddListener(AutoFillAll);
             autoFillButton.gameObject.SetActive(false);
         }
+
+        fields[activeIndex].Select();
+        fields[activeIndex].ActivateInputField();
+    }
+
+    IEnumerator ShowWrongIcon(int index)
+    {
+        wrongIcons[index].SetActive(true);
+
+        yield return new WaitForSeconds(0.7f);
+
+        wrongIcons[index].SetActive(false);
+
+        fields[index].text = "";
+        fields[index].Select();
+        fields[index].ActivateInputField();
     }
 
     public void OnDigitPressed(string digit)
@@ -134,12 +154,15 @@ public class MultiStepDialerController : MonoBehaviour
 
         if (Mathf.Abs(value - answers[activeIndex]) > tolerance)
         {
-            current.text = "";
             wrongAttempts++;
 
             OnWrongAnswer?.Invoke();
 
-            if (wrongAttempts >= maxWrongAttempts && autoFillButton)
+            StartCoroutine(ShowWrongIcon(activeIndex));
+
+            // current.text = "";
+
+            if (wrongAttempts >= maxWrongAttempts)
                 autoFillButton.gameObject.SetActive(true);
 
             return;
@@ -154,6 +177,8 @@ public class MultiStepDialerController : MonoBehaviour
         if (activeIndex < fields.Length)
         {
             fields[activeIndex].interactable = true;
+            fields[activeIndex].Select();
+            fields[activeIndex].ActivateInputField();
         }
         else
         {
@@ -213,6 +238,12 @@ public class MultiStepDialerController : MonoBehaviour
 
             if (icons[i] != null)
                 icons[i].SetActive(false);
+        }
+
+        if (fields.Length > 0)
+        {
+            fields[0].Select();
+            fields[0].ActivateInputField();
         }
     }
 }
