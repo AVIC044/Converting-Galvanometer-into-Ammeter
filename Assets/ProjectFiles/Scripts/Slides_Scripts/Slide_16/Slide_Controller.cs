@@ -146,7 +146,7 @@ public class Slide_Controller : MonoBehaviour
             if (setResistanceButton != null) setResistanceButton.gameObject.SetActive(true);
         }
 
-        // Synchronize visual plug states and green/default colors explicitly
+        // Always synchronize visual plug states and carry forward highlighted colors to any active slide index
         SyncUiWithBoxState();
     }
 
@@ -305,6 +305,7 @@ public class Slide_Controller : MonoBehaviour
                 bool isRemoved = IsPlugRemovedSafe(i);
                 Color targetColor = isRemoved ? selectedColor : defaultColor;
 
+                // Always apply target highlight color so it carries forward to all slide indices
                 _valueButtonImages[i].color = targetColor;
             }
         }
