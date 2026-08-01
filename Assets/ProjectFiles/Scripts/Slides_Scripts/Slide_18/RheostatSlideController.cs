@@ -1,7 +1,8 @@
-using System.Collections;
+﻿using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Events;
 
 public class RheostatSlideController : MonoBehaviour
 {
@@ -45,13 +46,30 @@ public class RheostatSlideController : MonoBehaviour
     [SerializeField] private TMP_Text voltmeterText;
     [SerializeField] private TMP_Text galvanometerText;
 
+    [Header("Digital Display Parents")]
+    [Tooltip("Display parent for the first target slide (e.g., Slide 19 / Index 18)")]
+    [SerializeField] private GameObject meterDisplayParent1;
+
+    [Tooltip("Display parent for the second target slide (e.g., Slide 24 / Index 23)")]
+    [SerializeField] private GameObject meterDisplayParent2;
+
     [Header("UI Controls")]
     [SerializeField] private Button validateButton;
+    [SerializeField] private Button autoFillButton;
     [SerializeField] private GameObject correctIcon;
     [SerializeField] private GameObject wrongIcon;
 
+    [Header("Settings")]
+    [SerializeField] private int maxWrongAttempts = 3;
+
+    [Header("Events")]
+    public UnityEvent OnCorrectAnswer;
+    public UnityEvent OnWrongAnswer;
+    public UnityEvent OnSlideReset;
+
     private bool completed = false;
     private bool isAtAnswerPoint = false;
+    private int wrongAttempts = 0;
     private int currentVoltmeterDisplay = 0;
     private int currentGalvanometerDisplay = 0;
 
@@ -61,6 +79,12 @@ public class RheostatSlideController : MonoBehaviour
 
         if (rheostat != null)
             rheostat.OnValueChanged += OnRheostatValueChanged;
+
+        // Sync immediately with the active page index whenever enabled
+        if (PageNavigationController.Instance != null)
+        {
+            OnPageChanged(PageNavigationController.CurrentIndex);
+        }
     }
 
     private void OnDisable()
@@ -76,30 +100,48 @@ public class RheostatSlideController : MonoBehaviour
         if (validateButton != null)
             validateButton.onClick.AddListener(ValidateAnswer);
 
-        ResetSlideUI();
+        if (autoFillButton != null)
+        {
+            autoFillButton.onClick.AddListener(AutoFill);
+            autoFillButton.gameObject.SetActive(false);
+        }
+
+        // Explicitly check the active page on Start
+        OnPageChanged(PageNavigationController.CurrentIndex);
     }
 
     private void OnPageChanged(int pageIndex)
     {
+
         for (int i = 0; i < points.Length; i++)
         {
             if (points[i].slidePageIndex == pageIndex)
             {
                 SetActivePoint(i);
+
+                // 1. Enable the correct meter display parent for this specific slide
+                UpdateMeterDisplayVisibility(pageIndex);
+
+                // 2. Reset slide UI & enable handle interaction
                 ResetSlideUI();
+
                 return;
             }
         }
 
-        // pageIndex isn't one of our answer-tracked slides (e.g. not 18 or 23) -
-        // make sure nothing is left interactable or displayed from a previous slide.
+        // --- Not an answer-tracked slide ---
+
+        // Hide both meter text parents on all non-tracked slides
+        SetAllMeterDisplaysActive(false);
+
         if (correctIcon) correctIcon.SetActive(false);
         if (wrongIcon) wrongIcon.SetActive(false);
+        if (autoFillButton) autoFillButton.gameObject.SetActive(false);
+
         if (rheostat != null)
             rheostat.SetInteraction(false);
     }
 
-  
     private void OnRheostatValueChanged(float normalized)
     {
         if (completed || points == null || points.Length == 0)
@@ -156,31 +198,57 @@ public class RheostatSlideController : MonoBehaviour
 
         RheostatPoint currentPoint = points[activePoint];
 
-        // Correct only while the handle is actually parked on this page's
-        // answer point (the override display is active) - not just whenever
-        // the continuous sweep happens to pass through the right number.
         if (isAtAnswerPoint)
         {
             StartCoroutine(ShowReadingsRoutine(currentPoint));
         }
         else
         {
+            wrongAttempts++;
             if (wrongIcon) wrongIcon.SetActive(true);
+
+            OnWrongAnswer?.Invoke();
+
+            if (autoFillButton != null && wrongAttempts >= maxWrongAttempts)
+            {
+                autoFillButton.gameObject.SetActive(true);
+            }
         }
+    }
+
+    public void AutoFill()
+    {
+        if (completed || points == null || points.Length == 0 || rheostat == null)
+            return;
+
+        RheostatPoint currentPoint = points[activePoint];
+
+        if (currentPoint.targetPosition != null)
+        {
+            float targetNorm = rheostat.GetNormalizedValueForTransform(currentPoint.targetPosition);
+            rheostat.SetNormalizedValue(targetNorm); // Snaps rheostat to target position
+        }
+
+        isAtAnswerPoint = true;
+        UpdateLiveDisplay(rheostat.NormalizedValue);
+
+        StartCoroutine(ShowReadingsRoutine(currentPoint));
     }
 
     private IEnumerator ShowReadingsRoutine(RheostatPoint point)
     {
         completed = true;
 
-        // Meters are already showing the exact correct values via the
-        // answer-point override; lock them in place and unlock navigation.
         if (correctIcon) correctIcon.SetActive(true);
+        if (wrongIcon) wrongIcon.SetActive(false);
         if (validateButton) validateButton.interactable = false;
+        if (autoFillButton) autoFillButton.gameObject.SetActive(false);
 
         rheostat.SetInteraction(false);
 
-        // Unlock next page in PageNavigationController
+        OnCorrectAnswer?.Invoke();
+
+        // Unlock page navigation in PageNavigationController
         PageNavigationController.RequestNavigationUnlock();
 
         yield return null;
@@ -192,9 +260,26 @@ public class RheostatSlideController : MonoBehaviour
             activePoint = index;
     }
 
+    private void UpdateMeterDisplayVisibility(int currentPageIndex)
+    {
+        // Hide both by default
+        SetAllMeterDisplaysActive(false);
+
+        // Turn ON only the one corresponding to the active index
+        if (points.Length > 0 && points[0].slidePageIndex == currentPageIndex)
+        {
+            if (meterDisplayParent1 != null) meterDisplayParent1.SetActive(true);
+        }
+        else if (points.Length > 1 && points[1].slidePageIndex == currentPageIndex)
+        {
+            if (meterDisplayParent2 != null) meterDisplayParent2.SetActive(true);
+        }
+    }
+
     public void ResetSlideUI()
     {
         completed = false;
+        wrongAttempts = 0;
 
         if (rheostat != null)
             UpdateLiveDisplay(rheostat.NormalizedValue);
@@ -202,7 +287,20 @@ public class RheostatSlideController : MonoBehaviour
         if (correctIcon) correctIcon.SetActive(false);
         if (wrongIcon) wrongIcon.SetActive(false);
         if (validateButton) validateButton.interactable = true;
+        if (autoFillButton) autoFillButton.gameObject.SetActive(false);
 
-        rheostat.SetInteraction(true);
+        if (rheostat != null)
+        {
+            rheostat.SetInteraction(true);
+            Debug.Log($"[RheostatSlideController] Interaction ENABLED for slide index: {PageNavigationController.CurrentIndex}");
+        }
+
+        OnSlideReset?.Invoke();
+    }
+
+    private void SetAllMeterDisplaysActive(bool isActive)
+    {
+        if (meterDisplayParent1 != null) meterDisplayParent1.SetActive(isActive);
+        if (meterDisplayParent2 != null) meterDisplayParent2.SetActive(isActive);
     }
 }

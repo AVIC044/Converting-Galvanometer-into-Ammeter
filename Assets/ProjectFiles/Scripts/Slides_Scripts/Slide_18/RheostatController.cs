@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.EventSystems;
+
 /// <summary>
 /// Drives a 3D rheostat handle using World Space coordinates.
 /// Ignores parent scaling issues (like scale 81.1898).
@@ -109,6 +110,18 @@ public class RheostatController : MonoBehaviour
         return range > 0f ? Mathf.InverseLerp(MinWorldVal, MaxWorldVal, worldVal) : 0f;
     }
 
+    /// <summary>
+    /// Sets the handle position directly using a normalized value (0 to 1).
+    /// Called during AutoFill operations.
+    /// </summary>
+    public void SetNormalizedValue(float targetNorm)
+    {
+        targetNorm = Mathf.Clamp01(targetNorm);
+        float targetWorldVal = Mathf.Lerp(MinWorldVal, MaxWorldVal, targetNorm);
+        handle.position = SetWorldAxisValue(handle.position, targetWorldVal);
+        UpdateNormalizedValue();
+    }
+
     private TouchState? GetActiveTouch()
     {
         if (Touchscreen.current == null)
@@ -212,14 +225,11 @@ public class RheostatController : MonoBehaviour
         float pointerWorldVal = GetWorldPointFromScreen(screenPosition);
         float targetWorldVal = pointerWorldVal + dragOffsetWorld;
 
-        // 1. Calculate the true min and max dynamically so negative/rotated axes don't break clamping
         float minWorld = MinWorldVal;
         float maxWorld = MaxWorldVal;
 
-        // 2. Clamp the handle's target world value between those bounds
         float clampedWorldVal = Mathf.Clamp(targetWorldVal, minWorld, maxWorld);
 
-        // 3. Apply the updated position to the handle
         handle.position = SetWorldAxisValue(handle.position, clampedWorldVal);
         UpdateNormalizedValue();
     }
