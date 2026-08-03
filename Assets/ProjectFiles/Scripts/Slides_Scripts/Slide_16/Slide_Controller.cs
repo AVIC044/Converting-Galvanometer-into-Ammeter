@@ -1,7 +1,8 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.Events;
+using UnityEngine.UI;
 
 public class Slide_Controller : MonoBehaviour
 {
@@ -24,7 +25,6 @@ public class Slide_Controller : MonoBehaviour
     [Header("Slide References UI and Validation")]
     [SerializeField] private GameObject[] valueSelectionButtons;
     [SerializeField] private ResistanceBoxController _resistanceBox;
-    [SerializeField] private bool validated = false;
 
     [Tooltip("SET 1: Required resistance value.")]
     [SerializeField] private int requiredResistance1 = 9900;
@@ -37,7 +37,6 @@ public class Slide_Controller : MonoBehaviour
 
     [SerializeField] private GameObject correctIcon;
     [SerializeField] private GameObject wrongIcon;
-
     [SerializeField] private GameObject wrongHintPanel;
 
     [Header("Value Button Highlight")]
@@ -50,6 +49,9 @@ public class Slide_Controller : MonoBehaviour
 
     private Image[] _valueButtonImages;
     private Button[] _valueButtons;
+
+    // Direct local tracking of toggled plug indices purely for UI highlight rendering
+    private readonly HashSet<int> _removedPlugIndices = new HashSet<int>();
 
     private int activePageIndex = -1;
 
@@ -72,7 +74,7 @@ public class Slide_Controller : MonoBehaviour
                 btn.onClick.AddListener(() => OnValueButtonClicked(capturedIndex));
             }
 
-            Image img = valueSelectionButtons[i].GetComponent<Image>();
+            Image img = valueSelectionButtons[i].GetComponentInChildren<Image>();
             _valueButtonImages[i] = img;
 
             if (img != null)
@@ -85,13 +87,7 @@ public class Slide_Controller : MonoBehaviour
         if (plugSetLeft != null && plugSetRight != null)
             StartCoroutine(OnSlideStartHighlight());
 
-        if (retryButton != null)
-            retryButton.gameObject.SetActive(false);
-
-        if (correctIcon != null) correctIcon.SetActive(false);
-        if (wrongIcon != null) wrongIcon.SetActive(false);
-        if (wrongHintPanel != null) wrongHintPanel.SetActive(false);
-
+        ResetValidationUI();
         RefreshActivePage();
     }
 
@@ -128,38 +124,64 @@ public class Slide_Controller : MonoBehaviour
 
     private void HandlePageChanged(int newPageIndex)
     {
+        int previousPageIndex = activePageIndex;
         activePageIndex = newPageIndex;
 
-        // Reset state when entering the ALL PLUGS page (Index 18)
-        if (activePageIndex == allPlugsPageIndex)
+        // Reset plugs ONLY when transitioning INTO the second value slide (Page 17)
+        if (activePageIndex == setResistancePageIndex2 && previousPageIndex != setResistancePageIndex2)
         {
-            validated = false; // Reset validation so button clicks work again
-            SetButtonsInteractable(true);
-
-            if (correctIcon != null) correctIcon.SetActive(false);
-            if (wrongIcon != null) wrongIcon.SetActive(false);
-            if (setResistanceButton != null) setResistanceButton.gameObject.SetActive(false);
-        }
-        else if ((activePageIndex == setResistancePageIndex1 || activePageIndex == setResistancePageIndex2) && !validated)
-        {
-            SetButtonsInteractable(true);
-            if (setResistanceButton != null) setResistanceButton.gameObject.SetActive(true);
+            _removedPlugIndices.Clear();
+            if (_resistanceBox != null)
+            {
+                _resistanceBox.RestoreAllPlugs();
+            }
         }
 
-        // Synchronize visual plug states and green/default colors explicitly
+        // Reset validation UI icons/messages
+        ResetValidationUI();
+
+        bool isSetPage = (activePageIndex == setResistancePageIndex1 || activePageIndex == setResistancePageIndex2);
+        bool isPageCompleted = PageNavigationController.Instance != null &&
+                               PageNavigationController.Instance.IsPageCompleted(activePageIndex);
+
+        // Make buttons interactable immediately if the page isn't marked complete
+        SetButtonsInteractable(!isPageCompleted);
+
+        // Show/hide Set Resistance button
+        if (setResistanceButton != null)
+        {
+            setResistanceButton.gameObject.SetActive(isSetPage && !isPageCompleted);
+        }
+
+        // Keep UI button colors synchronized with box state
         SyncUiWithBoxState();
+    }
+
+    private void ResetValidationUI()
+    {
+        if (correctIcon != null) correctIcon.SetActive(false);
+        if (wrongIcon != null) wrongIcon.SetActive(false);
+        if (wrongHintPanel != null) wrongHintPanel.SetActive(false);
+        if (retryButton != null) retryButton.gameObject.SetActive(false);
     }
 
     public void OnValueButtonClicked(int slotIndex)
     {
-        // Allow clicks on either the Set Resistance page (if not completed) or the All Plugs page
-        if (validated) return;
+        bool isPageCompleted = PageNavigationController.Instance != null &&
+                               PageNavigationController.Instance.IsPageCompleted(activePageIndex);
+
+        if (isPageCompleted) return;
 
         _resistanceBox?.SelectResistance(slotIndex);
     }
 
     private void HandlePlugToggled(int slotIndex, bool isRemoved)
     {
+        if (isRemoved)
+            _removedPlugIndices.Add(slotIndex);
+        else
+            _removedPlugIndices.Remove(slotIndex);
+
         if (_valueButtonImages != null && slotIndex >= 0 && slotIndex < _valueButtonImages.Length)
         {
             if (_valueButtonImages[slotIndex] != null)
@@ -169,7 +191,6 @@ public class Slide_Controller : MonoBehaviour
             }
         }
 
-        // Check completion ONLY when on page 18
         if (activePageIndex == allPlugsPageIndex)
         {
             CheckIfAllPlugsInserted();
@@ -178,12 +199,15 @@ public class Slide_Controller : MonoBehaviour
 
     private void CheckIfAllPlugsInserted()
     {
-        if (_resistanceBox == null || validated) return;
+        if (_resistanceBox == null) return;
 
-        // All plugs inserted = Resistance is 0
+        bool isPageCompleted = PageNavigationController.Instance != null &&
+                               PageNavigationController.Instance.IsPageCompleted(activePageIndex);
+
+        if (isPageCompleted) return;
+
         if (_resistanceBox.CurrentResistance == 0)
         {
-            validated = true;
             if (correctIcon != null) correctIcon.SetActive(true);
 
             SetButtonsInteractable(false);
@@ -195,7 +219,10 @@ public class Slide_Controller : MonoBehaviour
 
     public void OnSetResistancePressed()
     {
-        if (validated) return;
+        bool isPageCompleted = PageNavigationController.Instance != null &&
+                               PageNavigationController.Instance.IsPageCompleted(activePageIndex);
+
+        if (isPageCompleted) return;
 
         int targetRequiredResistance = 0;
 
@@ -209,7 +236,7 @@ public class Slide_Controller : MonoBehaviour
         }
         else
         {
-            return; // Not on a set resistance page
+            return;
         }
 
         if (_resistanceBox != null && _resistanceBox.CurrentResistance == targetRequiredResistance)
@@ -224,11 +251,10 @@ public class Slide_Controller : MonoBehaviour
 
     private void HandleCorrectAnswer()
     {
-        validated = true;
-
         if (correctIcon != null) correctIcon.SetActive(true);
         if (wrongIcon != null) wrongIcon.SetActive(false);
         if (retryButton != null) retryButton.gameObject.SetActive(false);
+        if (setResistanceButton != null) setResistanceButton.gameObject.SetActive(false);
 
         SetButtonsInteractable(false);
 
@@ -236,30 +262,9 @@ public class Slide_Controller : MonoBehaviour
         PageNavigationController.RequestNavigationUnlock();
     }
 
-    private void SetButtonsInteractable(bool state)
-    {
-        if (_valueButtons != null)
-        {
-            for (int i = 0; i < _valueButtons.Length; i++)
-            {
-                if (_valueButtons[i] != null)
-                    _valueButtons[i].interactable = state;
-            }
-        }
-
-        if (setResistanceButton != null)
-        {
-            int currentRes = (_resistanceBox != null) ? _resistanceBox.CurrentResistance : 0;
-            bool isSetPage = (activePageIndex == setResistancePageIndex1 || activePageIndex == setResistancePageIndex2);
-            setResistanceButton.interactable = state && (currentRes > 0) && isSetPage;
-        }
-
-        // Force re-sync green/default highlights after changing interactable state
-        SyncUiWithBoxState();
-    }
-
     private void HandleWrongAnswer()
     {
+        _removedPlugIndices.Clear();
         if (_resistanceBox != null)
             _resistanceBox.RestoreAllPlugs();
 
@@ -273,9 +278,7 @@ public class Slide_Controller : MonoBehaviour
 
     public void Retry()
     {
-        if (wrongIcon != null) wrongIcon.SetActive(false);
-        if (wrongHintPanel != null) wrongHintPanel.SetActive(false);
-        if (retryButton != null) retryButton.gameObject.SetActive(false);
+        ResetValidationUI();
 
         if (setResistanceButton != null) setResistanceButton.gameObject.SetActive(true);
 
@@ -284,36 +287,51 @@ public class Slide_Controller : MonoBehaviour
 
     private void HandleResistanceChanged(int index)
     {
-        bool isSetPage = (activePageIndex == setResistancePageIndex1 || activePageIndex == setResistancePageIndex2);
-        if (validated && isSetPage) return;
+        UpdateSetResistanceButtonInteractable();
+    }
 
-        int currentResistance = (_resistanceBox != null) ? _resistanceBox.CurrentResistance : 0;
-        if (setResistanceButton != null)
-            setResistanceButton.interactable = (currentResistance > 0) && isSetPage;
+    private void SetButtonsInteractable(bool state)
+    {
+        if (_valueButtons != null)
+        {
+            for (int i = 0; i < _valueButtons.Length; i++)
+            {
+                if (_valueButtons[i] != null)
+                    _valueButtons[i].interactable = state;
+            }
+        }
+
+        UpdateSetResistanceButtonInteractable();
+    }
+
+    private void UpdateSetResistanceButtonInteractable()
+    {
+        if (setResistanceButton == null) return;
+
+        bool isSetPage = (activePageIndex == setResistancePageIndex1 || activePageIndex == setResistancePageIndex2);
+        bool isPageCompleted = PageNavigationController.Instance != null &&
+                               PageNavigationController.Instance.IsPageCompleted(activePageIndex);
+
+        int currentRes = (_resistanceBox != null) ? _resistanceBox.CurrentResistance : 0;
+
+        setResistanceButton.interactable = !isPageCompleted && isSetPage && (currentRes > 0);
     }
 
     private void SyncUiWithBoxState()
     {
-        if (_resistanceBox == null) return;
+        if (_valueButtonImages == null) return;
 
-        if (_valueButtonImages != null)
+        for (int i = 0; i < _valueButtonImages.Length; i++)
         {
-            for (int i = 0; i < _valueButtonImages.Length; i++)
-            {
-                if (_valueButtonImages[i] == null) continue;
+            if (_valueButtonImages[i] == null) continue;
 
-                bool isRemoved = IsPlugRemovedSafe(i);
-                Color targetColor = isRemoved ? selectedColor : defaultColor;
+            bool isRemoved = _removedPlugIndices.Contains(i) || IsPlugRemovedSafe(i);
+            Color targetColor = isRemoved ? selectedColor : defaultColor;
 
-                _valueButtonImages[i].color = targetColor;
-            }
+            _valueButtonImages[i].color = targetColor;
         }
 
-        if (setResistanceButton != null)
-        {
-            bool isSetPage = (activePageIndex == setResistancePageIndex1 || activePageIndex == setResistancePageIndex2);
-            setResistanceButton.interactable = (_resistanceBox.CurrentResistance > 0) && isSetPage;
-        }
+        UpdateSetResistanceButtonInteractable();
     }
 
     private bool IsPlugRemovedSafe(int index)

@@ -38,6 +38,9 @@ public class PageMeshHighlightManager : MonoBehaviour
 
     private readonly HashSet<Renderer> highlightedRenderers = new HashSet<Renderer>();
 
+    // Tracks entries that have been turned off so they don't re-appear on page revisit
+    private readonly HashSet<string> disabledEntries = new HashSet<string>();
+
     private void OnEnable()
     {
         PageNavigationController.OnPageChanged += HandlePageChanged;
@@ -62,9 +65,12 @@ public class PageMeshHighlightManager : MonoBehaviour
         if (config == null)
             return;
 
-        foreach (MeshHighlightEntry entry in config.meshEntries)
+        for (int i = 0; i < config.meshEntries.Count; i++)
         {
-            if (entry.AutoHighlightOnPageEnter)
+            MeshHighlightEntry entry = config.meshEntries[i];
+
+            // Only auto-highlight if it hasn't been explicitly turned off before
+            if (entry.AutoHighlightOnPageEnter && !IsEntryDisabled(currentPageIndex, i))
             {
                 ApplyHighlightToEntry(entry);
             }
@@ -98,6 +104,8 @@ public class PageMeshHighlightManager : MonoBehaviour
         if (elementIndex < 0 || elementIndex >= config.meshEntries.Count)
             return;
 
+        // Re-enable in tracking if explicitly enabled again
+        disabledEntries.Remove(GetEntryKey(pageIndex, elementIndex));
         ApplyHighlightToEntry(config.meshEntries[elementIndex]);
     }
 
@@ -111,6 +119,8 @@ public class PageMeshHighlightManager : MonoBehaviour
         if (elementIndex < 0 || elementIndex >= config.meshEntries.Count)
             return;
 
+        // Record disabled state so it won't trigger again on page revisit
+        disabledEntries.Add(GetEntryKey(pageIndex, elementIndex));
         RemoveHighlightFromEntry(config.meshEntries[elementIndex]);
     }
 
@@ -121,9 +131,10 @@ public class PageMeshHighlightManager : MonoBehaviour
         if (config == null)
             return;
 
-        foreach (MeshHighlightEntry entry in config.meshEntries)
+        for (int i = 0; i < config.meshEntries.Count; i++)
         {
-            ApplyHighlightToEntry(entry);
+            disabledEntries.Remove(GetEntryKey(pageIndex, i));
+            ApplyHighlightToEntry(config.meshEntries[i]);
         }
     }
 
@@ -134,9 +145,10 @@ public class PageMeshHighlightManager : MonoBehaviour
         if (config == null)
             return;
 
-        foreach (MeshHighlightEntry entry in config.meshEntries)
+        for (int i = 0; i < config.meshEntries.Count; i++)
         {
-            RemoveHighlightFromEntry(entry);
+            disabledEntries.Add(GetEntryKey(pageIndex, i));
+            RemoveHighlightFromEntry(config.meshEntries[i]);
         }
     }
 
@@ -275,6 +287,10 @@ public class PageMeshHighlightManager : MonoBehaviour
     //==========================================================
     // HELPERS
     //==========================================================
+
+    private string GetEntryKey(int pageIndex, int elementIndex) => $"{pageIndex}_{elementIndex}";
+
+    private bool IsEntryDisabled(int pageIndex, int elementIndex) => disabledEntries.Contains(GetEntryKey(pageIndex, elementIndex));
 
     private PageHighlightConfig GetConfigByPageIndex(int pageIndex)
     {

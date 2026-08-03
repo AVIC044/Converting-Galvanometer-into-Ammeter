@@ -1,188 +1,191 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
 public class PlugKeyController : MonoBehaviour
 {
-    [Header("Click Settings")]
-    [Tooltip("Only objects with this tag will trigger the click/toggle action.")]
-    public string clickableTag = "Untagged";
+    public enum AutoActionType { PlugIn, PlugOut }
 
-    [Tooltip("If FALSE, user clicks will be ignored until a function unlocks movement.")]
-    public bool allowClickToMove = false;
+    [System.Serializable]
+    public class PageAutoPlugConfig
+    {
+        [Tooltip("The page index (0-based) where this auto action triggers")]
+        public int pageIndex;
+
+        [Tooltip("Type of automatic action to perform")]
+        public AutoActionType actionType = AutoActionType.PlugIn;
+
+        [Tooltip("Delay in seconds before triggering the auto move")]
+        public float delay = 0.5f;
+
+        [Tooltip("Event triggered specifically when this page auto-sequence fires")]
+        public UnityEvent OnPageAutoSequenceTriggered;
+    }
+
+    [Header("Click Settings")]
+    [SerializeField] private string clickableTag = "Plugkey";
+    [SerializeField] private bool allowClickToMove = false;
 
     [Header("Plug Positions")]
-    public Transform plugInPosition;
-    public Transform plugOutPosition;
+    [SerializeField] private Transform plugInPosition;
+    [SerializeField] private Transform plugOutPosition;
 
     [Header("Movement Settings")]
-    [Tooltip("How long the plug takes to fully move in or out (seconds).")]
-    public float moveDuration = 0.5f;
-
-    [Tooltip("Shapes the easing of the movement. Default: smooth ease-in/ease-out.")]
-    public AnimationCurve moveCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+    [SerializeField] private float moveDuration = 0.5f;
+    [SerializeField] private AnimationCurve moveCurve = AnimationCurve.Linear(0, 0, 1, 1);
 
     [Header("Initial State")]
-    [Tooltip("Check this if the plug should start already plugged in.")]
-    public bool startPluggedIn = true;
+    [SerializeField] private bool startPluggedIn = false;
 
     [Header("Events")]
-    public UnityEvent onPlugIn;
-    public UnityEvent onPlugOut;
+    public UnityEvent OnPlugIn;
+    public UnityEvent OnPlugOut;
+
+    [Header("Automatic Page Sequence Settings")]
+    [SerializeField] private List<PageAutoPlugConfig> pageAutoConfigs = new List<PageAutoPlugConfig>();
+
+    [Tooltip("Global event when ANY automatic plug-in completes")]
+    public UnityEvent OnAutoPlugIn;
+
+    [Tooltip("Global event when ANY automatic plug-out completes")]
+    public UnityEvent OnAutoPlugOut;
 
     private bool isPluggedIn;
-    private Transform targetTransform;
+    private bool isMoving = false;
+    private Coroutine activeMoveRoutine;
 
-    private Vector3 startPos;
-    private Quaternion startRot;
+    private void OnEnable()
+    {
+        PageNavigationController.OnPageChanged += HandlePageChanged;
+    }
 
-    private bool isMoving;
-    private float moveTimer;
+    private void OnDisable()
+    {
+        PageNavigationController.OnPageChanged -= HandlePageChanged;
+    }
 
     private void Start()
     {
-        if (plugInPosition == null || plugOutPosition == null)
-        {
-            Debug.LogWarning("PlugKeyController: Plug In/Out positions not assigned.");
-            return;
-        }
-
         isPluggedIn = startPluggedIn;
-
-        // Snap instantly to the correct starting position/rotation without firing events on load
-        targetTransform = isPluggedIn ? plugInPosition : plugOutPosition;
-        transform.SetPositionAndRotation(targetTransform.position, targetTransform.rotation);
+        SetImmediateState(isPluggedIn);
     }
 
-    private void Update()
+    private void HandlePageChanged(int pageIndex)
     {
-        if (!isMoving || targetTransform == null)
-            return;
-
-        moveTimer += Time.deltaTime;
-
-        float t = moveDuration > 0f ? Mathf.Clamp01(moveTimer / moveDuration) : 1f;
-        float eased = moveCurve.Evaluate(t);
-
-        transform.position = Vector3.Lerp(startPos, targetTransform.position, eased);
-        transform.rotation = Quaternion.Slerp(startRot, targetTransform.rotation, eased);
-
-        if (t >= 1f)
+        foreach (var config in pageAutoConfigs)
         {
-            transform.SetPositionAndRotation(targetTransform.position, targetTransform.rotation);
-            isMoving = false;
-
-            if (isPluggedIn)
-                onPlugIn?.Invoke();
-            else
-                onPlugOut?.Invoke();
+            if (config != null && config.pageIndex == pageIndex)
+            {
+                StartCoroutine(ExecuteAutoSequenceRoutine(config));
+                break;
+            }
         }
     }
 
-    // Called automatically when the user clicks/taps this object's Collider
-    private void OnMouseDown()
+    private IEnumerator ExecuteAutoSequenceRoutine(PageAutoPlugConfig config)
     {
-        // Block movement if click-to-move is disabled or tag doesn't match
-        if (!allowClickToMove)
-            return;
+        if (config.delay > 0f)
+            yield return new WaitForSeconds(config.delay);
 
-        if (!string.IsNullOrEmpty(clickableTag) && !CompareTag(clickableTag))
-            return;
+        config.OnPageAutoSequenceTriggered?.Invoke();
 
-        TogglePlug();
-    }
-
-    /// <summary>
-    /// Call this function from external scripts/events to enable user clicks.
-    /// </summary>
-    public void UnlockMovement()
-    {
-        allowClickToMove = true;
-    }
-
-    /// <summary>
-    /// Call this function from external scripts/events to disable user clicks.
-    /// </summary>
-    public void LockMovement()
-    {
-        allowClickToMove = false;
+        if (config.actionType == AutoActionType.PlugIn)
+        {
+            if (!isPluggedIn)
+            {
+                yield return StartCoroutine(MovePlugRoutine(true));
+                OnAutoPlugIn?.Invoke();
+            }
+        }
+        else if (config.actionType == AutoActionType.PlugOut)
+        {
+            if (isPluggedIn)
+            {
+                yield return StartCoroutine(MovePlugRoutine(false));
+                OnAutoPlugOut?.Invoke();
+            }
+        }
     }
 
     public void TogglePlug()
     {
-        if (isPluggedIn)
-            PlugOut();
-        else
-            PlugIn();
+        if (isMoving) return;
+
+        bool targetState = !isPluggedIn;
+        if (activeMoveRoutine != null) StopCoroutine(activeMoveRoutine);
+        activeMoveRoutine = StartCoroutine(MovePlugRoutine(targetState));
     }
-
-    // =========================================================================
-    // INSTANT SNAP FUNCTIONS (NO ANIMATION - TRANSFORMS CHANGE IMMEDIATELY)
-    // =========================================================================
-
-    /// <summary>
-    /// Instantly moves and rotates the object to plugInPosition without animation.
-    /// </summary>
-    public void SnapPlugIn()
-    {
-        if (plugInPosition == null) return;
-
-        isMoving = false;
-        isPluggedIn = true;
-        targetTransform = plugInPosition;
-
-        transform.SetPositionAndRotation(plugInPosition.position, plugInPosition.rotation);
-        onPlugIn?.Invoke();
-    }
-
-    /// <summary>
-    /// Instantly moves and rotates the object to plugOutPosition without animation.
-    /// </summary>
-    public void SnapPlugOut()
-    {
-        if (plugOutPosition == null) return;
-
-        isMoving = false;
-        isPluggedIn = false;
-        targetTransform = plugOutPosition;
-
-        transform.SetPositionAndRotation(plugOutPosition.position, plugOutPosition.rotation);
-        onPlugOut?.Invoke();
-    }
-
-    // =========================================================================
-    // ANIMATED MOVEMENT FUNCTIONS
-    // =========================================================================
 
     public void PlugIn()
     {
-        if (isPluggedIn || plugInPosition == null)
-            return;
-
-        isPluggedIn = true;
-        BeginMove(plugInPosition);
+        if (isMoving || isPluggedIn) return;
+        if (activeMoveRoutine != null) StopCoroutine(activeMoveRoutine);
+        activeMoveRoutine = StartCoroutine(MovePlugRoutine(true));
     }
 
     public void PlugOut()
     {
-        if (!isPluggedIn || plugOutPosition == null)
-            return;
-
-        isPluggedIn = false;
-        BeginMove(plugOutPosition);
+        if (isMoving || !isPluggedIn) return;
+        if (activeMoveRoutine != null) StopCoroutine(activeMoveRoutine);
+        activeMoveRoutine = StartCoroutine(MovePlugRoutine(false));
     }
 
-    private void BeginMove(Transform target)
+    private IEnumerator MovePlugRoutine(bool plugIn)
     {
-        targetTransform = target;
-        startPos = transform.position;
-        startRot = transform.rotation;
-        moveTimer = 0f;
         isMoving = true;
+
+        Vector3 startPos = transform.position;
+        Quaternion startRot = transform.rotation;
+
+        Transform targetTransform = plugIn ? plugInPosition : plugOutPosition;
+
+        if (targetTransform != null)
+        {
+            Vector3 endPos = targetTransform.position;
+            Quaternion endRot = targetTransform.rotation;
+
+            float elapsed = 0f;
+            while (elapsed < moveDuration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / moveDuration);
+                float evalT = moveCurve.Evaluate(t);
+
+                transform.position = Vector3.Lerp(startPos, endPos, evalT);
+                transform.rotation = Quaternion.Slerp(startRot, endRot, evalT);
+
+                yield return null;
+            }
+
+            transform.position = endPos;
+            transform.rotation = endRot;
+        }
+
+        isPluggedIn = plugIn;
+        isMoving = false;
+
+        if (isPluggedIn)
+            OnPlugIn?.Invoke();
+        else
+            OnPlugOut?.Invoke();
     }
 
-    // Query current state from other scripts
-    public bool IsPluggedIn()
+    private void SetImmediateState(bool pluggedIn)
     {
-        return isPluggedIn;
+        Transform targetTransform = pluggedIn ? plugInPosition : plugOutPosition;
+        if (targetTransform != null)
+        {
+            transform.position = targetTransform.position;
+            transform.rotation = targetTransform.rotation;
+        }
+    }
+
+    private void OnMouseDown()
+    {
+        if (allowClickToMove && gameObject.CompareTag(clickableTag))
+        {
+            TogglePlug();
+        }
     }
 }

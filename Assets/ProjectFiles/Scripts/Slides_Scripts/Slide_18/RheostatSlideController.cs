@@ -429,18 +429,18 @@ public class RheostatSlideController : MonoBehaviour
 
             ResetSlideUI();
         }
-        else
-        {
-            // 3. Force BOTH meter displays OFF on ALL other slides
-            SetAllMeterDisplaysActive(false);
+        //else // commented to make the meters visible from these slides, can be diabled by page asset controller.
+        //{
+        //    // 3. Force BOTH meter displays OFF on ALL other slides
+        //    SetAllMeterDisplaysActive(false);
 
-            if (correctIcon) correctIcon.SetActive(false);
-            if (wrongIcon) wrongIcon.SetActive(false);
-            if (autoFillButton) autoFillButton.gameObject.SetActive(false);
+        //    if (correctIcon) correctIcon.SetActive(false);
+        //    if (wrongIcon) wrongIcon.SetActive(false);
+        //    if (autoFillButton) autoFillButton.gameObject.SetActive(false);
 
-            if (rheostat != null)
-                rheostat.SetInteraction(false);
-        }
+        //    if (rheostat != null)
+        //        rheostat.SetInteraction(false);
+        //}
     }
 
     private void OnRheostatValueChanged(float normalized)
